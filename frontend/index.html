@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Transcribing Tool</title>
+    <!-- Import Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #transcribedText {
+            overflow: scroll;
+            height: 300px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2>Preview Audio</h2>
+                <audio id="audioPreview" controls class="w-100"></audio>
+                
+                <h2 class="mt-4">Upload Audio</h2>
+                <input type="file" id="audioUpload" class="form-control" accept="audio/*" />
+                <button id="transcribeButton" type="button" class="btn btn-primary mt-2">Transcribe</button>
+            </div>
+            <div class="col-lg-6">
+                <h2>Transcribed Text</h2>
+                <div id="transcribedText" class="border border-primary h-100"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.getElementById("audioUpload").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const audioPreview = document.getElementById("audioPreview");
+                audioPreview.src = URL.createObjectURL(file);
+            }
+        });
+
+        document.getElementById("transcribeButton").addEventListener("click", function() {
+            const fileInput = document.getElementById("audioUpload");
+            if (fileInput.files.length === 0) {
+                alert("Please select an audio file.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("audio", file);
+
+            document.getElementById("transcribedText").innerText = "Transcribing...";
+
+            
+            axios.post("http://localhost:3000/transcribe", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            })
+            .then(response => {
+                document.getElementById("transcribedText").innerText = response.data.text;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("transcribedText").innerText = "Error transcribing audio.";
+            });
+        });
+    </script>
+</body>
+</html>
